@@ -32,12 +32,18 @@ std::ostream& operator << (std::ostream& stream, const boost::system::error_code
 class Client: public boost::enable_shared_from_this<Client>, boost::noncopyable
 {
 private:
-    static const int message_length=1024;
-    ip::tcp::socket cl;  // write_sock_
-    char write_buf[message_length];
-public:
-    Client():cl(service){}
 
+    static const int message_length=1024;
+    
+    ip::tcp::socket cl;  // write_sock_
+    
+    char write_buf[message_length];
+    
+public:
+    Client():cl(service)
+    {
+     }
+    
     void start_client()
     {
         std::cout<<"Hello from client"<<std::endl;
@@ -126,28 +132,35 @@ private:
     boost::scoped_ptr<ip::tcp::acceptor> acc;
 
     mutable std::vector<std::string>greet;
+    
     std::map<std::string,std::string>sent;
 
-
 public:
-    Server():ser(service){
+    Server():ser(service)
+    {
          readGreetings();
          fMap();
     }
 
-    void readGreetings(const std::string &path="greetings.txt")const{
+    void readGreetings(const std::string &path="greetings.txt")const
+    {
         std::ifstream file(path,std::ios_base::in);
-        if(!file.is_open()){
+        
+        if(!file.is_open())
+        {
             return;
         }
+        
         std::string content(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
+        
         boost::split(greet,content,boost::is_any_of("\n,?!."));
         //boost::split(greet,content,boost::is_any_of("\n,?!."));
         //std::copy(std::istream_iterator<std::string>(file),std::istream_iterator<std::string>{},std::back_inserter(greet));
         std::copy(greet.cbegin(),greet.cend(),std::ostream_iterator<std::string>(std::cout,"\n"));
     }
 
-    void fMap(){
+    void fMap()
+    {
         sent.emplace("install","Path://file.exe -k install");
         sent.emplace("uninstall","Path://file.exe -k uninstall");
     }
@@ -213,6 +226,7 @@ public:
     void do_write_answer()
     {
         std::string msg=boost::algorithm::to_lower_copy(std::string(read_buf));
+        
         if(std::find(greet.cbegin(),greet.cend(),msg)!=greet.cend())
         {
             std::mt19937 gen(time(nullptr));
@@ -221,8 +235,10 @@ public:
             strcpy(read_buf,greet.at(dist(gen)).c_str());
             //strcpy(read_buf,"Hello");
 
-        } else if(sent.find(msg)!=sent.end()){
-            strcpy(read_buf,sent[msg].c_str());
+        } else if(sent.find(msg)!=sent.end())
+        {
+           
+           strcpy(read_buf,sent[msg].c_str());
 
         } else strcpy(read_buf,"idk");
 
